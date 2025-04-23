@@ -1,0 +1,35 @@
+// ==UserScript==
+// @name         Morningstar Watchlist API Parameter Modifier
+// @namespace    http://tampermonkey.net/
+// @version      1.4
+// @description  Modifies Morningstar watchlist API and adds sortable custom columns with Fair Value CAGR data
+// @author       You
+// @match        https://www.morningstar.com/tools/watchlists*
+// @match        https://www.morningstar.com/*
+// @run-at       document-start
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+    
+    console.log('Morningstar API Interceptor v1.4 loaded and running');
+    
+    // Target API URL pattern we want to intercept
+    const TARGET_API_PATTERN = '/api/v2/tools/watchlists/_data';
+    
+    // Define additional fields you want to add
+    const ADDITIONAL_FIELDS = [
+        'exchange', // Ensure exchange field is always requested
+        // Add any other fields you want here
+    ];
+    
+// Cache for API responses and extracted fair values to avoid duplicate processing
+const apiCache = new Map();
+const fairValueCache = new Map();
+    
+// Queue for API requests to prevent overwhelming the server
+const apiQueue = [];
+const queuedSecurityIds = new Set(); // Track which security IDs are already in the queue
+let isProcessingQueue = false;
+const API_DELAY_MS = 300; // Delay between API calls in milliseconds
